@@ -12,10 +12,16 @@ namespace JWTAuthAPI.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        [HttpGet, Authorize]
-        public IEnumerable<string> Get()
+        [HttpGet("getcustomersforuser"), Authorize]
+        public IEnumerable<string> GetCustomersForUser()
         {
             return new string[] { "Ahmet", "Mehmet", "Veli" };
+        }
+
+        [HttpGet("getcustomersforadmin"), Authorize(Roles = "Admin")]
+        public IEnumerable<string> GetCustomersForAdmin()
+        {
+            return new string[] { "Murat", "Hakan", "Ömer" };
         }
     }
 }

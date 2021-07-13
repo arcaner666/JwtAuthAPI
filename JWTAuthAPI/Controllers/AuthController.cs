@@ -17,13 +17,13 @@ namespace JWTAuthAPI.Controllers
     public class AuthController : ControllerBase
     {
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDto loginDto)
+        public IActionResult Login(LoginDto loginDto)
         {
             if (loginDto == null)
             {
                 return BadRequest("Geçersiz istek!");
             }
-            if (loginDto.UserName == "caner" && loginDto.Password == "123456")
+            if (loginDto.UserName == "caner" && loginDto.Password == "123")
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
                 var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -36,6 +36,26 @@ namespace JWTAuthAPI.Controllers
                 );
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
                 LoginDto loginResponseDto =  new() { Token = tokenString };
+                return Ok(loginResponseDto);
+            }
+            else if (loginDto.UserName == "admin" && loginDto.Password == "123")
+            {
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
+                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+                var claims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.Name, loginDto.UserName),
+                    new Claim(ClaimTypes.Role, "Admin")
+                };
+                var tokenOptions = new JwtSecurityToken(
+                    issuer: "http://localhost:5000",
+                    audience: "http://localhost:5000",
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(5),
+                    signingCredentials: signinCredentials
+                );
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+                LoginDto loginResponseDto = new() { Token = tokenString };
                 return Ok(loginResponseDto);
             }
             else
