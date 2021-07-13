@@ -76,14 +76,14 @@ namespace JWTAuthAPI
 
             app.UseHttpsRedirection();
 
+            // Hata alirsan yerini degistir.
+            app.UseCors("EnableCORS");
+
             app.UseRouting();
 
             app.UseAuthentication();
 
             app.UseAuthorization();
-
-            // Hata alirsan yerini degistir.
-            app.UseCors("EnableCORS");
 
             app.UseEndpoints(endpoints =>
             {

@@ -25,7 +25,7 @@ namespace JWTAuthAPI.Controllers
             }
             if (loginDto.UserName == "caner" && loginDto.Password == "123456")
             {
-                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecretkey"));
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
                 var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
                 var tokenOptions = new JwtSecurityToken(
                     issuer: "http://localhost:5000",
