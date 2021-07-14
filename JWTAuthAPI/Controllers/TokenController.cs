@@ -24,8 +24,7 @@ namespace JWTAuthAPI.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpPost]
-        [Route("refresh")]
+        [HttpPost("refresh")]
         public IActionResult Refresh(UserDto userDto)
         {
             if (userDto == null)
@@ -61,8 +60,7 @@ namespace JWTAuthAPI.Controllers
             return Ok(userResponseDto);
         }
 
-        [HttpPost, Authorize]
-        [Route("revoke")]
+        [HttpPost("revoke"), Authorize]
         public IActionResult Revoke()
         {
             var username = User.Identity.Name;

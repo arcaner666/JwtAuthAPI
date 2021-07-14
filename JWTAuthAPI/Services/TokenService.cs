@@ -21,7 +21,7 @@ namespace JWTAuthAPI.Services
                 issuer: "http://localhost:5000",
                 audience: "http://localhost:5000",
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(1),
+                expires: DateTime.Now.AddSeconds(10),
                 signingCredentials: signinCredentials
             );
 

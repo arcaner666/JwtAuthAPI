@@ -58,7 +58,7 @@ namespace JWTAuthAPI.Controllers
             var refreshToken = _tokenService.GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(5);
+            user.RefreshTokenExpiryTime = DateTime.Now.AddSeconds(30);
 
             _jWTAuthDBContext.SaveChanges();
 
