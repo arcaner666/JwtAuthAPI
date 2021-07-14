@@ -45,11 +45,11 @@ namespace JWTAuthAPI.Controllers
 
             var claims = new List<Claim>();
             claims.Add(new Claim(ClaimTypes.Name, user.UserName));
-            if (user.UserName == "caner")
-            {
-                claims.Add(new Claim(ClaimTypes.Role, "User"));
-            }
-            else if (user.UserName == "admin")
+            //if (user.UserName == "caner")
+            //{
+            //    claims.Add(new Claim(ClaimTypes.Role, "User"));
+            //} else
+            if (user.UserName == "admin")
             {
                 claims.Add(new Claim(ClaimTypes.Role, "Admin"));
             }
@@ -58,13 +58,12 @@ namespace JWTAuthAPI.Controllers
             var refreshToken = _tokenService.GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+            user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(5);
 
             _jWTAuthDBContext.SaveChanges();
 
             UserDto userResponseDto = new()
             {
-                UserId = user.UserId,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
