@@ -17,13 +17,14 @@ namespace JWTAuthAPI.Controllers
     public class AuthController : ControllerBase
     {
         [HttpPost("login")]
-        public IActionResult Login(LoginDto loginDto)
+        public IActionResult Login(User user)
         {
-            if (loginDto == null)
+            if (user == null)
             {
                 return BadRequest("Geçersiz istek!");
             }
-            if (loginDto.UserName == "caner" && loginDto.Password == "123")
+            // Kullanıcı Girişi
+            if (user.UserName == "caner" && user.Password == "123")
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
                 var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -35,16 +36,17 @@ namespace JWTAuthAPI.Controllers
                     signingCredentials: signinCredentials
                 );
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-                LoginDto loginResponseDto =  new() { Token = tokenString };
-                return Ok(loginResponseDto);
+                User loginResponse =  new() { Token = tokenString };
+                return Ok(loginResponse);
             }
-            else if (loginDto.UserName == "admin" && loginDto.Password == "123")
+            // Admin Girişi
+            else if (user.UserName == "admin" && user.Password == "123")
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
                 var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
                 var claims = new List<Claim>()
                 {
-                    new Claim(ClaimTypes.Name, loginDto.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(ClaimTypes.Role, "Admin")
                 };
                 var tokenOptions = new JwtSecurityToken(
@@ -55,8 +57,8 @@ namespace JWTAuthAPI.Controllers
                     signingCredentials: signinCredentials
                 );
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-                LoginDto loginResponseDto = new() { Token = tokenString };
-                return Ok(loginResponseDto);
+                User loginResponse = new() { Token = tokenString };
+                return Ok(loginResponse);
             }
             else
             {
