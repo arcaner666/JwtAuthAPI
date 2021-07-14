@@ -1,4 +1,6 @@
-﻿using JWTAuthAPI.Models;
+﻿using JWTAuthAPI.Dtos;
+using JWTAuthAPI.Models;
+using JWTAuthAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -16,54 +18,58 @@ namespace JWTAuthAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        [HttpPost("login")]
-        public IActionResult Login(User user)
+        readonly JWTAuthDBContext _jWTAuthDBContext;
+        readonly ITokenService _tokenService;
+
+        public AuthController(JWTAuthDBContext jWTAuthDBContext, ITokenService tokenService)
         {
-            if (user == null)
+            _jWTAuthDBContext = jWTAuthDBContext;
+            _tokenService = tokenService;
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login(UserDto userDto)
+        {
+            if (userDto == null)
             {
                 return BadRequest("Geçersiz istek!");
             }
-            // Kullanıcı Girişi
-            if (user.UserName == "caner" && user.Password == "123")
+
+            User user = _jWTAuthDBContext.Users.FirstOrDefault(u =>
+            u.UserName == userDto.UserName && u.Password == userDto.Password);
+
+            if (user == null)
             {
-                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
-                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-                var tokenOptions = new JwtSecurityToken(
-                    issuer: "http://localhost:5000",
-                    audience: "http://localhost:5000",
-                    claims: new List<Claim>(),
-                    expires: DateTime.Now.AddMinutes(5),
-                    signingCredentials: signinCredentials
-                );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-                User loginResponse =  new() { Token = tokenString };
-                return Ok(loginResponse);
+                return Unauthorized("Kullanıcı adı veya parola yanlış!");
             }
-            // Admin Girişi
-            else if (user.UserName == "admin" && user.Password == "123")
+
+            var claims = new List<Claim>();
+            claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+            if (user.UserName == "caner")
             {
-                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
-                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-                var claims = new List<Claim>()
-                {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, "Admin")
-                };
-                var tokenOptions = new JwtSecurityToken(
-                    issuer: "http://localhost:5000",
-                    audience: "http://localhost:5000",
-                    claims: claims,
-                    expires: DateTime.Now.AddMinutes(5),
-                    signingCredentials: signinCredentials
-                );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-                User loginResponse = new() { Token = tokenString };
-                return Ok(loginResponse);
+                claims.Add(new Claim(ClaimTypes.Role, "User"));
             }
-            else
+            else if (user.UserName == "admin")
             {
-                return Unauthorized("Yetkiniz yok!");
+                claims.Add(new Claim(ClaimTypes.Role, "Admin"));
             }
+
+            var accessToken = _tokenService.GenerateAccessToken(claims);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+
+            _jWTAuthDBContext.SaveChanges();
+
+            UserDto userResponseDto = new()
+            {
+                UserId = user.UserId,
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
+
+            return Ok(userResponseDto);
         }
     }
 }
